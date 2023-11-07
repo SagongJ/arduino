@@ -1,63 +1,40 @@
+아두이노
+void setup() {
+  pinMode(13, OUTPUT);
+  Serial.begin(9600);
+}
+void loop() {
+  if(Serial.available()>0){
+    char v = Serial.read();
+    if(v=='1') digitalWrite(13, HIGH);
+    if(v=='0') digitalWrite(13,LOW);
+  }
+}
+
+
+프로세싱
 import processing.serial.*;
 import processing.net.*;
-
-Serial p;
 Server s;
 Client c;
-String m = "";
-
-void setup() {
-  p = new Serial(this, "COM5", 9600);
+Serial p;
+void setup(){
+  p = new Serial(this,"COM5",9600);
   s = new Server(this, 12345);
 }
-
-void draw() {
-  // 시리얼에서 데이터 읽기
-  if (p.available() > 0) {
-    m = p.readStringUntil('\n');
-    if (m != null) {
-      print(m);
-    }
-  }
-
-  // 서버에서 클라이언트 연결 확인
-  c = s.available();
-  if (c != null) {
-    String w = c.readString();
-    println(w);
-    if (w.indexOf("GET") == 0) { // 스마트폰의 GET 요청이 오면
-      c.write("HTTP/1.1 200 OK\r\n\r\n\r\n"); // 응답 보내기
-      c.write(m);
-    }
-  }
-
-  // 스마트폰에서 받은 데이터 처리
-  if (c != null) {
-    String receivedData = c.readString(); // 클라이언트로부터 데이터 읽기
-    if (receivedData != null) {
-      receivedData = receivedData.substring(receivedData.length() - 1); // 마지막 1문자만 추출하기
-      p.write(receivedData);
-      if (receivedData.equals("1")) background(255, 0, 0);
-      if (receivedData.equals("0")) background(0, 0, 255);
-    }
+void draw(){
+  c =s.available();
+  if(c!=null){
+    String m=c.readString();
+    m = m.substring(m.length()-1);  
+    p.write(m);
+    if(m.indexOf("1")==0) background(255,0,0);
+    if(m.indexOf("0")==0) background(0,0,255);
   }
 }
-
-void keyPressed() {
-  // 키보드 입력 처리
+void keyPressed(){
   background(0);
   textSize(64);
   text(key, 30, 70);
   p.write(key);
-
-  // 서버에서 클라이언트 연결 확인
-  c = s.available();
-  if (c != null) {
-    String w = c.readString();
-    println(w);
-    if (w.indexOf("GET") == 0) { // 스마트폰의 GET 요청이 오면
-      c.write("HTTP/1.1 200 OK\r\n\r\n\r\n"); // 응답 보내기
-      c.write(key);
-    }
-  }
 }
